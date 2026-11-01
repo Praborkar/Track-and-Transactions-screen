@@ -5,9 +5,13 @@ const { spawn } = require('child_process');
 const os = require('os');
 const path = require('path');
 
-const lan = Object.values(os.networkInterfaces())
-  .flat()
-  .find((i) => i && i.family === 'IPv4' && !i.internal);
+// Pick the address a phone on the same Wi-Fi can reach: skip virtual adapters (WSL, Hyper-V, Docker, VPNs).
+const VIRTUAL = /vethernet|wsl|hyper-v|virtual|vmware|vbox|docker|vpn|tailscale|loopback|bluetooth/i;
+const candidates = Object.entries(os.networkInterfaces()).flatMap(([name, list]) =>
+  (list || []).filter((i) => i.family === 'IPv4' && !i.internal && !VIRTUAL.test(name)).map((i) => ({ name, address: i.address })),
+);
+const wifiFirst = [...candidates].sort((a, b) => Number(/wi-?fi|wlan/i.test(b.name)) - Number(/wi-?fi|wlan/i.test(a.name)));
+const lan = process.env.LAN_IP ? { name: 'LAN_IP', address: process.env.LAN_IP } : wifiFirst[0];
 const port = process.env.PORT || '4010';
 const apiUrl = process.env.EXPO_PUBLIC_API_URL || `http://${lan ? lan.address : '10.0.2.2'}:${port}`;
 
