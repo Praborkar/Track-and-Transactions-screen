@@ -46,6 +46,15 @@ mock/        the mock API and its data, copied unchanged
 Network data goes through the domain rules into SQLite; the screens read only from there. A failed or killed
 sync cannot change what the user already sees.
 
+## Write-up
+
+- [Decision log](docs/DECISION_LOG.md): ten decisions, what I rejected and why
+- [What the data made me decide](docs/DATA_DECISIONS.md): what I saw in the data and the API, what I chose, what I would do with more time
+- [Review of PR #412](docs/PR_412_REVIEW.md): ten comments, nine of them blocking
+- [AI disclosure](docs/AI_DISCLOSURE.md): tools used, and where the AI was wrong
+- [What is unfinished](docs/UNFINISHED.md)
+- [Do the tests catch real breakage?](docs/TEST_PROOF.md): every rule broken on purpose, with the results
+
 ## Building an APK
 
 ```bash
