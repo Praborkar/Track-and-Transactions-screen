@@ -30,7 +30,8 @@ export default function Settings() {
     setBusy(true);
     try {
       await saveApiUrl(url);
-      router.back();
+      if (router.canGoBack()) router.back();
+      else router.replace('/');
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Could not save');
     }
