@@ -4,6 +4,8 @@ A React Native (Expo) rebuild of the Simplify Money **Track** screen: every tran
 accounts, month by month, with what was spent and earned, search, a detail view, and a cache that keeps
 working when the network does not.
 
+Built by Prabor Kar ([GitHub](https://github.com/Praborkar), [LinkedIn](https://www.linkedin.com/in/prabor-kar/), prabork@gmail.com) for the Simplify Money Frontend Engineer (React Native) assignment.
+
 ## Links
 
 - Walkthrough video (5 minutes or less, unlisted): https://youtu.be/KvBHAF0veZU
