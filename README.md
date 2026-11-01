@@ -4,6 +4,12 @@ A React Native (Expo) rebuild of the Simplify Money **Track** screen: every tran
 accounts, month by month, with what was spent and earned, search, a detail view, and a cache that keeps
 working when the network does not.
 
+## Links
+
+- Walkthrough video (5 minutes or less, unlisted): https://youtu.be/KvBHAF0veZU
+- Android APK: https://expo.dev/accounts/prabor_kar/projects/track-and-transactions/builds/f39e616d-e56a-4300-889e-65b39bfa1e42
+  The APK defaults to the emulator address. On a real phone, open Settings and enter `http://<your computer's Wi-Fi address>:4010` before the first sync.
+
 ## Run it in under five minutes
 
 Needs Node 18 or newer, and the Expo Go app on an Android phone on the same Wi-Fi as your computer.
