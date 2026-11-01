@@ -1,0 +1,23 @@
+[
+  {
+    "id": "acc_4821",
+    "bank": "HDFC Bank",
+    "type": "SAVINGS",
+    "last4": "4821",
+    "nickname": "HDFC Savings"
+  },
+  {
+    "id": "acc_9075",
+    "bank": "ICICI Bank",
+    "type": "SAVINGS",
+    "last4": "9075",
+    "nickname": "ICICI Savings"
+  },
+  {
+    "id": "acc_3310",
+    "bank": "HDFC Bank",
+    "type": "CREDIT_CARD",
+    "last4": "3310",
+    "nickname": "HDFC Millennia"
+  }
+]
