@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
-import { DEFAULT_API_URL, useTrack } from '../src/app/runtime';
+import { DEFAULT_API_URL, useTrack } from '../src/state/runtime';
 import { useTheme } from '../src/ui/theme';
 
 export default function Settings() {

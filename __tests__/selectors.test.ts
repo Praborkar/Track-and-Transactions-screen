@@ -1,5 +1,5 @@
 import { applyRecords, emptyLedger } from '../src/domain';
-import { buildListView } from '../src/app/selectors';
+import { buildListView } from '../src/state/selectors';
 
 const list = require('../mock/fixtures/transactions.json');
 const changes = require('../mock/fixtures/changes.json');

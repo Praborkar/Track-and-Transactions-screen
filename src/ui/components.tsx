@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatInr, formatIst, formatMoney } from '../domain';
 import type { Txn } from '../domain';
-import type { ListItem } from '../app/selectors';
+import type { ListItem } from '../state/selectors';
 import type { EngineSnapshot } from '../sync/engine';
 import { HEADER_HEIGHT, ROW_HEIGHT, useTheme } from './theme';
 

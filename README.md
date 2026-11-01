@@ -38,7 +38,7 @@ times) and compares the app's totals with a brute-force count, for 12 seeds.
 ```
 src/domain   pure rules, no React, no network: normalize both record shapes, merge by id, month totals, search, money
 src/sync     API client (timeout, retry, Retry-After), the sync engine, and the SQLite store
-src/app      the store the screens read, and the list view built from it
+src/state    the store the screens read, and the list view built from it
 app/         screens (expo-router): Track, transaction detail, settings
 mock/        the mock API and its data, copied unchanged
 ```

@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { formatInr, formatIst, formatMoney, formatUtc } from '../../src/domain';
-import { useTrack } from '../../src/app/runtime';
+import { useTrack } from '../../src/state/runtime';
 import { Badge } from '../../src/ui/components';
 import { useTheme } from '../../src/ui/theme';
 

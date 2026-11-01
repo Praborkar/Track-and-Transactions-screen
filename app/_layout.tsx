@@ -2,7 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Pressable, Text } from 'react-native';
-import { boot } from '../src/app/runtime';
+import { boot } from '../src/state/runtime';
 import { useTheme } from '../src/ui/theme';
 
 export default function RootLayout() {
