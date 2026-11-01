@@ -5,8 +5,12 @@ export type ListItem =
   | { type: 'header'; key: string; month: string; label: string; totals: MonthTotals; matches: number | null; loading: boolean }
   | { type: 'row'; key: string; txn: Txn; /** last row of its month, so the card can close */ last: boolean };
 
+export type Kind = 'all' | 'spent' | 'earned' | 'transfers';
+
 export interface ListView {
   items: ListItem[];
+  /** every month we hold, newest first, for the month picker */
+  months: Array<{ key: string; label: string }>;
   /** rows in the ledger, whatever the search says */
   total: number;
   /** rows matching the search (equals total when there is no search) */
@@ -16,9 +20,19 @@ export interface ListView {
 
 export interface ViewOptions {
   query: string;
+  /** only this month ("2026-10"), or null for all */
+  month?: string | null;
+  kind?: Kind;
   includePending: boolean;
   /** a full sync is part-way through, so the oldest month we hold may be missing rows */
   historyLoading: boolean;
+}
+
+function matchesKind(t: Txn, kind: Kind): boolean {
+  if (kind === 'all') return true;
+  if (kind === 'transfers') return t.isTransfer;
+  if (t.isTransfer) return false;
+  return kind === 'spent' ? t.direction === 'debit' : t.direction === 'credit';
 }
 
 /**
@@ -32,14 +46,18 @@ export function buildListView(ledger: Ledger, o: ViewOptions): ListView {
   const months = [...totals.keys()].sort().reverse();
   const oldest = months[months.length - 1];
   const q = o.query.trim();
-  const searching = q !== '';
+  const kind = o.kind ?? 'all';
+  const month = o.month ?? null;
+  const searching = q !== '' || kind !== 'all';
 
   const byMonth = new Map<string, Txn[]>();
   let matching = 0;
   for (const t of all) {
-    if (searching && !matchesQuery(t, q)) continue;
-    matching++;
     const m = istMonthKey(t.occurredAt);
+    if (month && m !== month) continue;
+    if (!matchesKind(t, kind)) continue;
+    if (q !== '' && !matchesQuery(t, q)) continue;
+    matching++;
     let arr = byMonth.get(m);
     if (!arr) byMonth.set(m, (arr = []));
     arr.push(t);
@@ -47,6 +65,7 @@ export function buildListView(ledger: Ledger, o: ViewOptions): ListView {
 
   const items: ListItem[] = [];
   for (const m of months) {
+    if (month && m !== month) continue;
     const rows = byMonth.get(m);
     if (searching && !rows) continue;
     items.push({
@@ -61,5 +80,5 @@ export function buildListView(ledger: Ledger, o: ViewOptions): ListView {
     const list = rows ?? [];
     list.forEach((t, i) => items.push({ type: 'row', key: t.id, txn: t, last: i === list.length - 1 }));
   }
-  return { items, total: all.length, matching, searching };
+  return { items, months: months.map((key) => ({ key, label: monthLabel(key) })), total: all.length, matching, searching };
 }

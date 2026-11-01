@@ -43,3 +43,41 @@ describe('month sections', () => {
     for (const n of names) expect(n.toLowerCase()).toContain('swiggy');
   });
 });
+
+describe('month and type filters', () => {
+  it('lists the months we hold, newest first, for the picker', () => {
+    const v = buildListView(full, opts);
+    expect(v.months).toHaveLength(13);
+    expect(v.months[0]).toEqual({ key: '2026-10', label: 'October 2026' });
+    expect(v.months[12].key).toBe('2025-10');
+  });
+
+  it('shows only the chosen month, with the full totals for that month', () => {
+    const all = buildListView(full, opts);
+    const feb = buildListView(full, { ...opts, month: '2026-02' });
+    const headers = feb.items.filter((i) => i.type === 'header');
+    expect(headers).toHaveLength(1);
+    const h = headers[0];
+    expect(h.type === 'header' && h.totals.spent).toBe(44334140);
+    const rows = feb.items.filter((i) => i.type === 'row');
+    expect(rows.length).toBe(h.type === 'header' ? h.totals.count : -1);
+    expect(rows.length).toBeLessThan(all.items.length);
+  });
+
+  it('Transfers lists only own-account transfers; Spent and Earned leave them out', () => {
+    const rowsOf = (kind: 'spent' | 'earned' | 'transfers') => buildListView(full, { ...opts, kind }).items.flatMap((i) => (i.type === 'row' ? [i.txn] : []));
+    const tr = rowsOf('transfers');
+    expect(tr.length).toBeGreaterThan(0);
+    expect(tr.every((t) => t.isTransfer)).toBe(true);
+    expect(rowsOf('spent').every((t) => !t.isTransfer && t.direction === 'debit')).toBe(true);
+    expect(rowsOf('earned').every((t) => !t.isTransfer && t.direction === 'credit')).toBe(true);
+    expect(rowsOf('spent').length + rowsOf('earned').length + tr.length).toBe(4686);
+  });
+
+  it('finds the Notion USD row and the 3 Oct self transfer', () => {
+    const notion = buildListView(full, { ...opts, query: 'notion' }).items.flatMap((i) => (i.type === 'row' ? [i.txn] : []));
+    expect(notion.some((t) => t.currency === 'USD' && t.inrMinor === 86661)).toBe(true);
+    const self = buildListView(full, { ...opts, month: '2026-10', kind: 'transfers' }).items.flatMap((i) => (i.type === 'row' ? [i.txn] : []));
+    expect(self.some((t) => t.amountMinor === 2500000)).toBe(true);
+  });
+});

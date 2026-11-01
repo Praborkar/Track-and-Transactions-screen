@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { create } from 'zustand';
 import { defaultDeps } from '../sync/api';
 import { SyncEngine } from '../sync/engine';
+import type { Kind } from './selectors';
 import type { EngineSnapshot } from '../sync/engine';
 import { SqliteStore } from '../sync/sqliteStore';
 
@@ -15,9 +16,13 @@ interface TrackState {
   ready: boolean;
   snapshot: EngineSnapshot | null;
   query: string;
+  month: string | null;
+  kind: Kind;
   apiUrl: string;
   includePending: boolean;
   setQuery: (q: string) => void;
+  setMonth: (m: string | null) => void;
+  setKind: (k: Kind) => void;
   refresh: (reason?: string) => Promise<void>;
   saveApiUrl: (url: string) => Promise<void>;
   setIncludePending: (v: boolean) => Promise<void>;
@@ -31,9 +36,13 @@ export const useTrack = create<TrackState>((set, get) => ({
   ready: false,
   snapshot: null,
   query: '',
+  month: null,
+  kind: 'all',
   apiUrl: DEFAULT_API_URL,
   includePending: true,
   setQuery: (query) => set({ query }),
+  setMonth: (month) => set({ month }),
+  setKind: (kind) => set({ kind }),
   refresh: async (reason = 'pull to refresh') => {
     await engine?.requestSync(reason);
   },

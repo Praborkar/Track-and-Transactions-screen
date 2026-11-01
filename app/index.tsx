@@ -1,24 +1,25 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { ListRenderItem } from 'react-native';
 import { buildListView } from '../src/state/selectors';
 import type { ListItem } from '../src/state/selectors';
 import { useTrack } from '../src/state/runtime';
-import { MonthHeader, SyncBanner, TxnRow } from '../src/ui/components';
+import { FilterBar, MonthHeader, SyncBanner, TxnRow } from '../src/ui/components';
 import { GAP, HEADER_HEIGHT, ROW_HEIGHT, SIDE, font, theme as t } from '../src/ui/theme';
 
 const rowHeight = (it: ListItem) => (it.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT + (it.last ? GAP : 0));
 
 export default function Track() {
   const router = useRouter();
-  const { ready, snapshot, query, includePending, setQuery, refresh } = useTrack();
+  const { ready, snapshot, query, month, kind, includePending, setQuery, setMonth, setKind, refresh } = useTrack();
+  const listRef = useRef<FlatList<ListItem>>(null);
 
   const ledger = snapshot?.ledger;
   const historyLoading = snapshot?.state.phase === 'full';
   const view = useMemo(
-    () => (ledger ? buildListView(ledger, { query, includePending, historyLoading }) : null),
-    [ledger, query, includePending, historyLoading],
+    () => (ledger ? buildListView(ledger, { query, month, kind, includePending, historyLoading }) : null),
+    [ledger, query, month, kind, includePending, historyLoading],
   );
   const accountNames = useMemo(() => {
     const m = new Map<string, string>();
@@ -40,6 +41,11 @@ export default function Track() {
     (_: unknown, index: number) => ({ length: view ? rowHeight(view.items[index]) : ROW_HEIGHT, offset: offsets[index], index }),
     [view, offsets],
   );
+
+  // a new filter starts at the top of its results
+  useEffect(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [query, month, kind]);
 
   const open = useCallback((id: string) => router.push({ pathname: '/txn/[id]', params: { id } }), [router]);
   const renderItem: ListRenderItem<ListItem> = useCallback(
@@ -85,6 +91,7 @@ export default function Track() {
           </Text>
         ) : null}
       </View>
+      <FilterBar months={view.months} month={month} onMonth={setMonth} kind={kind} onKind={setKind} />
       <SyncBanner snap={snapshot} rows={view.total} onRetry={() => void refresh('retry')} />
       {empty ? (
         <View style={s.center}>
@@ -93,10 +100,11 @@ export default function Track() {
         </View>
       ) : view.searching && view.matching === 0 ? (
         <View style={s.center}>
-          <Text style={s.muted}>No transactions match “{query.trim()}”.</Text>
+          <Text style={s.muted}>{query.trim() ? `No transactions match “${query.trim()}”.` : 'No transactions for this filter.'}</Text>
         </View>
       ) : (
         <FlatList
+          ref={listRef}
           data={view.items}
           keyExtractor={(i) => i.key}
           renderItem={renderItem}

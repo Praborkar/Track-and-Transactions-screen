@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { formatInr, formatIst, formatMoney } from '../domain';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { formatInr, formatIst, formatIstShort, formatMoney } from '../domain';
 import type { Txn } from '../domain';
 import type { ListItem } from '../state/selectors';
 import type { EngineSnapshot } from '../sync/engine';
@@ -75,7 +75,7 @@ export const TxnRow = memo(function TxnRow({ txn, last, account, onPress }: { tx
               {txn.merchant || 'Unnamed'}
             </Text>
             <Text numberOfLines={1} style={s.sub}>
-              {formatIst(txn.occurredAt)} · {account}
+              {formatIstShort(txn.occurredAt)} · {account.replace(/ ··\d+$/, '')}
             </Text>
             {txn.isTransfer || txn.status === 'PENDING' || (txn.currency !== 'INR' && !inr) ? (
               <View style={s.badges}>
@@ -102,6 +102,57 @@ export function Badge({ text, warn }: { text: string; warn?: boolean }) {
   return (
     <View style={[s.badge, { backgroundColor: warn ? t.warnBg : t.chip }]}>
       <Text style={[s.badgeText, { color: warn ? t.warnText : t.sub }]}>{text}</Text>
+    </View>
+  );
+}
+
+export function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      accessibilityLabel={label}
+      style={[s.chip, selected && s.chipOn]}
+    >
+      <Text style={[s.chipText, selected && s.chipTextOn]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+/** Pick one month, or all of them, and narrow to money out, money in or transfers. */
+export function FilterBar({
+  months,
+  month,
+  onMonth,
+  kind,
+  onKind,
+}: {
+  months: Array<{ key: string; label: string }>;
+  month: string | null;
+  onMonth: (m: string | null) => void;
+  kind: 'all' | 'spent' | 'earned' | 'transfers';
+  onKind: (k: 'all' | 'spent' | 'earned' | 'transfers') => void;
+}) {
+  const kinds = [
+    ['all', 'All'],
+    ['spent', 'Spent'],
+    ['earned', 'Earned'],
+    ['transfers', 'Transfers'],
+  ] as const;
+  return (
+    <View style={{ gap: 8, marginTop: 10 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow} accessibilityLabel="Choose month">
+        <Chip label="All months" selected={month === null} onPress={() => onMonth(null)} />
+        {months.map((m) => (
+          <Chip key={m.key} label={m.label} selected={month === m.key} onPress={() => onMonth(m.key)} />
+        ))}
+      </ScrollView>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow} accessibilityLabel="Choose type">
+        {kinds.map(([k, label]) => (
+          <Chip key={k} label={label} selected={kind === k} onPress={() => onKind(k)} />
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -148,6 +199,11 @@ export function SyncBanner({ snap, rows, onRetry }: { snap: EngineSnapshot; rows
 }
 
 const s = StyleSheet.create({
+  chipRow: { paddingHorizontal: SIDE, gap: 8 },
+  chip: { backgroundColor: t.card, borderColor: t.line, borderWidth: 1, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 6 },
+  chipOn: { backgroundColor: t.accent, borderColor: t.accent },
+  chipText: { fontSize: 12.5, fontFamily: font.medium, color: t.text },
+  chipTextOn: { color: t.onAccent, fontFamily: font.semi },
   headerCard: {
     flex: 1,
     backgroundColor: t.card,

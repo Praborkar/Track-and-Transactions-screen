@@ -17,6 +17,11 @@ export function formatIst(epochMs: number): string {
   return `${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${h12}:${mm} ${h < 12 ? 'am' : 'pm'}`;
 }
 
+/** "10 Oct, 7:12 pm": the month card already says the year. */
+export function formatIstShort(epochMs: number): string {
+  return formatIst(epochMs).replace(/ \d{4},/, ',');
+}
+
 export function formatUtc(epochMs: number): string {
   return new Date(epochMs).toISOString().replace('T', ' ').replace(/:\d\d\.\d{3}Z$/, ' UTC');
 }
