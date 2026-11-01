@@ -2,10 +2,9 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { DEFAULT_API_URL, useTrack } from '../src/state/runtime';
-import { useTheme } from '../src/ui/theme';
+import { card, font, theme as t } from '../src/ui/theme';
 
 export default function Settings() {
-  const t = useTheme();
   const router = useRouter();
   const { apiUrl, saveApiUrl, includePending, setIncludePending, snapshot } = useTrack();
   const [url, setUrl] = useState(apiUrl);
@@ -40,12 +39,10 @@ export default function Settings() {
 
   const rejected = snapshot?.state.rejected;
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }} keyboardShouldPersistTaps="handled">
-      <View style={[s.card, { backgroundColor: t.card, borderColor: t.line }]}>
-        <Text style={[s.h, { color: t.text }]}>Server address</Text>
-        <Text style={{ color: t.sub, fontSize: 13 }}>
-          Default {DEFAULT_API_URL}. Emulator: http://10.0.2.2:4010. A real phone: http://your-computer’s-Wi-Fi-address:4010.
-        </Text>
+    <ScrollView contentContainerStyle={{ padding: 14, gap: 14 }} keyboardShouldPersistTaps="handled">
+      <View style={[card, s.card]}>
+        <Text style={s.h}>Server address</Text>
+        <Text style={s.sub}>Default {DEFAULT_API_URL}. Emulator: http://10.0.2.2:4010. A real phone: your computer’s Wi-Fi address with :4010.</Text>
         <TextInput
           value={url}
           onChangeText={setUrl}
@@ -53,35 +50,43 @@ export default function Settings() {
           autoCorrect={false}
           keyboardType="url"
           accessibilityLabel="Server address"
-          style={[s.input, { color: t.text, backgroundColor: t.chip }]}
+          style={s.input}
         />
         {msg ? (
-          <Text style={{ color: t.sub }} accessibilityLiveRegion="polite">
+          <Text style={[s.sub, { color: t.text }]} accessibilityLiveRegion="polite">
             {msg}
           </Text>
         ) : null}
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <Pressable disabled={busy} onPress={test} accessibilityRole="button" style={[s.btn, { borderColor: t.accent }]}>
-            <Text style={{ color: t.accent, fontWeight: '600' }}>Test</Text>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Pressable disabled={busy} onPress={test} accessibilityRole="button" style={[s.btn, { backgroundColor: t.card, borderColor: t.line, borderWidth: 1 }]}>
+            <Text style={[s.btnText, { color: t.text }]}>Test</Text>
           </Pressable>
-          <Pressable disabled={busy} onPress={save} accessibilityRole="button" style={[s.btn, { backgroundColor: t.accent, borderColor: t.accent }]}>
-            <Text style={{ color: '#fff', fontWeight: '600' }}>Save and sync</Text>
+          <Pressable disabled={busy} onPress={save} accessibilityRole="button" style={[s.btn, { backgroundColor: t.accent, flex: 1 }]}>
+            <Text style={[s.btnText, { color: t.onAccent }]}>Save and sync</Text>
           </Pressable>
         </View>
-        <Text style={{ color: t.sub, fontSize: 12 }}>Saving a new address keeps your saved transactions on screen and replaces them only once the new server has sent everything.</Text>
+        <Text style={s.sub}>Saving a new address keeps your saved transactions on screen and replaces them only once the new server has sent everything.</Text>
       </View>
-      <View style={[s.card, { backgroundColor: t.card, borderColor: t.line }]}>
+
+      <View style={[card, s.card]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Text style={[s.h, { color: t.text }]}>Count pending in totals</Text>
-            <Text style={{ color: t.sub, fontSize: 13 }}>Pending transactions are shown with a badge either way.</Text>
+            <Text style={s.h}>Count pending in totals</Text>
+            <Text style={s.sub}>Pending transactions are shown with a badge either way.</Text>
           </View>
-          <Switch value={includePending} onValueChange={(v) => void setIncludePending(v)} accessibilityLabel="Count pending transactions in totals" />
+          <Switch
+            value={includePending}
+            onValueChange={(v) => void setIncludePending(v)}
+            trackColor={{ true: t.accent, false: '#D5DDEA' }}
+            thumbColor="#fff"
+            accessibilityLabel="Count pending transactions in totals"
+          />
         </View>
       </View>
-      <View style={[s.card, { backgroundColor: t.card, borderColor: t.line }]}>
-        <Text style={[s.h, { color: t.text }]}>Data health</Text>
-        <Text style={{ color: t.sub }}>
+
+      <View style={[card, s.card]}>
+        <Text style={s.h}>Data health</Text>
+        <Text style={s.sub}>
           {rejected && rejected.total > 0
             ? `${rejected.total} record(s) could not be read and are not counted: ${Object.entries(rejected.byReason)
                 .map(([k, n]) => `${k.replace(/_/g, ' ')} ${n}`)
@@ -94,8 +99,10 @@ export default function Settings() {
 }
 
 const s = StyleSheet.create({
-  card: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 10 },
-  h: { fontSize: 16, fontWeight: '700' },
-  input: { height: 44, borderRadius: 8, paddingHorizontal: 12, fontSize: 15 },
-  btn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 10 },
+  card: { padding: 16, gap: 10 },
+  h: { fontSize: 15, fontFamily: font.semi, color: t.text },
+  sub: { fontSize: 12.5, fontFamily: font.regular, color: t.sub },
+  input: { height: 46, borderRadius: 23, paddingHorizontal: 16, fontSize: 14, fontFamily: font.regular, color: t.text, backgroundColor: t.chip },
+  btn: { borderRadius: 23, paddingHorizontal: 20, height: 44, alignItems: 'center', justifyContent: 'center' },
+  btnText: { fontSize: 14, fontFamily: font.semi },
 });

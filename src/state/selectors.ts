@@ -3,7 +3,7 @@ import type { Ledger, MonthTotals, Txn } from '../domain';
 
 export type ListItem =
   | { type: 'header'; key: string; month: string; label: string; totals: MonthTotals; matches: number | null; loading: boolean }
-  | { type: 'row'; key: string; txn: Txn };
+  | { type: 'row'; key: string; txn: Txn; /** last row of its month, so the card can close */ last: boolean };
 
 export interface ListView {
   items: ListItem[];
@@ -58,7 +58,8 @@ export function buildListView(ledger: Ledger, o: ViewOptions): ListView {
       matches: searching ? rows!.length : null,
       loading: o.historyLoading && m === oldest,
     });
-    for (const t of rows ?? []) items.push({ type: 'row', key: t.id, txn: t });
+    const list = rows ?? [];
+    list.forEach((t, i) => items.push({ type: 'row', key: t.id, txn: t, last: i === list.length - 1 }));
   }
   return { items, total: all.length, matching, searching };
 }

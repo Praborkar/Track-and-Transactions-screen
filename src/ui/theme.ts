@@ -1,46 +1,74 @@
-import { useColorScheme } from 'react-native';
-
-const light = {
-  bg: '#F6F7F9',
+/**
+ * Look and feel follows the Simplify Money app: a pale blue-grey page, white rounded cards,
+ * navy text, amber for the main action, Poppins. One light theme, like the app.
+ */
+export const theme = {
+  bg: '#EEF3FA',
   card: '#FFFFFF',
-  text: '#14171F',
-  sub: '#5B6270',
-  line: '#E3E6EC',
-  spent: '#B3261E',
-  earned: '#1B7F3B',
-  accent: '#2F5BEA',
+  text: '#0B2545',
+  sub: '#6B7A90',
+  line: '#E3EAF4',
+  spent: '#D9423B',
+  earned: '#17915A',
+  accent: '#FFC02E',
+  onAccent: '#1B1B1B',
+  link: '#E6A100',
   warnBg: '#FFF4D6',
-  warnText: '#6B4E00',
-  errBg: '#FDE7E5',
-  errText: '#7A1712',
-  infoBg: '#E7EEFF',
-  infoText: '#1D3A8A',
-  chip: '#EDEFF4',
+  warnText: '#8A5A00',
+  errBg: '#FDE9E7',
+  errText: '#9A2A22',
+  infoBg: '#E4EDFF',
+  infoText: '#27498F',
+  okBg: '#E3F6EC',
+  okText: '#1B7A4E',
+  chip: '#F1F5FB',
+  tint: '#FFF7E0',
+} as const;
+
+export type Theme = typeof theme;
+
+export const useTheme = (): Theme => theme;
+
+export const font = {
+  regular: 'Poppins_400Regular',
+  medium: 'Poppins_500Medium',
+  semi: 'Poppins_600SemiBold',
+  bold: 'Poppins_700Bold',
+} as const;
+
+export const card = {
+  backgroundColor: theme.card,
+  borderRadius: 18,
+  borderWidth: 1,
+  borderColor: theme.line,
+  shadowColor: '#1B3B6F',
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 3 },
+  elevation: 1,
+} as const;
+
+export const SIDE = 14;
+export const GAP = 14;
+export const ROW_HEIGHT = 72;
+export const HEADER_HEIGHT = 160;
+
+const ICONS: Record<string, { emoji: string; bg: string }> = {
+  FOOD: { emoji: '🍽️', bg: '#FFF1DC' },
+  GROCERIES: { emoji: '🛒', bg: '#E3F6EA' },
+  SHOPPING: { emoji: '🛍️', bg: '#EFE9FF' },
+  TRAVEL: { emoji: '✈️', bg: '#E1EEFF' },
+  SUBSCRIPTIONS: { emoji: '🔁', bg: '#FCE7F1' },
+  HEALTH: { emoji: '💊', bg: '#E1F7F5' },
+  REFUND: { emoji: '↩️', bg: '#E3F6EC' },
+  BILLS: { emoji: '🧾', bg: '#FFF4D6' },
+  ENTERTAINMENT: { emoji: '🎬', bg: '#F1E7FF' },
+  RENT: { emoji: '🏠', bg: '#E4EDFF' },
+  SALARY: { emoji: '💼', bg: '#E3F6EC' },
+  TRANSFER: { emoji: '⇄', bg: '#EDF1F7' },
+  TRANSFERS_OUT: { emoji: '💸', bg: '#FDEBE7' },
+  INSURANCE_PREMIUM: { emoji: '🛡️', bg: '#E4EDFF' },
+  BNPL_EMI: { emoji: '📅', bg: '#FFF4D6' },
 };
 
-const dark: typeof light = {
-  bg: '#0E1015',
-  card: '#171A21',
-  text: '#F1F3F7',
-  sub: '#A3AABA',
-  line: '#272B35',
-  spent: '#FF8A80',
-  earned: '#6FD48E',
-  accent: '#8FA8FF',
-  warnBg: '#3A2F0B',
-  warnText: '#FFE08A',
-  errBg: '#3C1512',
-  errText: '#FFB4AB',
-  infoBg: '#18224A',
-  infoText: '#B9C8FF',
-  chip: '#232733',
-};
-
-export type Theme = typeof light;
-
-export function useTheme(): Theme {
-  return useColorScheme() === 'dark' ? dark : light;
-}
-
-export const ROW_HEIGHT = 68;
-export const HEADER_HEIGHT = 92;
+export const iconFor = (category: string) => ICONS[category] ?? { emoji: '•', bg: '#EDF1F7' };

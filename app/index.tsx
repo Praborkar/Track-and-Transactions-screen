@@ -6,10 +6,11 @@ import { buildListView } from '../src/state/selectors';
 import type { ListItem } from '../src/state/selectors';
 import { useTrack } from '../src/state/runtime';
 import { MonthHeader, SyncBanner, TxnRow } from '../src/ui/components';
-import { HEADER_HEIGHT, ROW_HEIGHT, useTheme } from '../src/ui/theme';
+import { GAP, HEADER_HEIGHT, ROW_HEIGHT, SIDE, font, theme as t } from '../src/ui/theme';
+
+const rowHeight = (it: ListItem) => (it.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT + (it.last ? GAP : 0));
 
 export default function Track() {
-  const t = useTheme();
   const router = useRouter();
   const { ready, snapshot, query, includePending, setQuery, refresh } = useTrack();
 
@@ -26,31 +27,36 @@ export default function Track() {
   }, [snapshot?.accounts]);
 
   // fixed heights let the list jump straight to any offset without measuring rows
-  const layout = useMemo(() => {
-    const offsets: number[] = [];
+  const offsets = useMemo(() => {
+    const out: number[] = [];
     let y = 0;
     for (const it of view?.items ?? []) {
-      offsets.push(y);
-      y += it.type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT;
+      out.push(y);
+      y += rowHeight(it);
     }
-    return offsets;
+    return out;
   }, [view]);
   const getItemLayout = useCallback(
-    (_: unknown, index: number) => ({ length: view?.items[index].type === 'header' ? HEADER_HEIGHT : ROW_HEIGHT, offset: layout[index], index }),
-    [view, layout],
+    (_: unknown, index: number) => ({ length: view ? rowHeight(view.items[index]) : ROW_HEIGHT, offset: offsets[index], index }),
+    [view, offsets],
   );
 
   const open = useCallback((id: string) => router.push({ pathname: '/txn/[id]', params: { id } }), [router]);
   const renderItem: ListRenderItem<ListItem> = useCallback(
-    ({ item }) => (item.type === 'header' ? <MonthHeader item={item} /> : <TxnRow txn={item.txn} account={accountNames.get(item.txn.accountId) ?? item.txn.accountId} onPress={open} />),
+    ({ item }) =>
+      item.type === 'header' ? (
+        <MonthHeader item={item} />
+      ) : (
+        <TxnRow txn={item.txn} last={item.last} account={accountNames.get(item.txn.accountId) ?? item.txn.accountId} onPress={open} />
+      ),
     [accountNames, open],
   );
 
   if (!ready || !snapshot || !view) {
     return (
-      <View style={[s.center, { backgroundColor: t.bg }]}>
-        <ActivityIndicator />
-        <Text style={{ color: t.sub, marginTop: 12 }}>Opening your saved transactions…</Text>
+      <View style={s.center}>
+        <ActivityIndicator color={t.accent} />
+        <Text style={s.muted}>Opening your saved transactions…</Text>
       </View>
     );
   }
@@ -60,7 +66,7 @@ export default function Track() {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={[s.searchWrap, { backgroundColor: t.card, borderColor: t.line }]}>
+      <View style={s.searchWrap}>
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -71,10 +77,10 @@ export default function Track() {
           autoCapitalize="none"
           returnKeyType="search"
           clearButtonMode="while-editing"
-          style={[s.search, { color: t.text, backgroundColor: t.chip }]}
+          style={s.search}
         />
         {view.searching ? (
-          <Text style={{ color: t.sub, fontSize: 12, marginTop: 6 }} accessibilityLiveRegion="polite">
+          <Text style={[s.muted, { marginTop: 6, marginLeft: 6 }]} accessibilityLiveRegion="polite">
             {view.matching} of {view.total} transactions
           </Text>
         ) : null}
@@ -82,14 +88,12 @@ export default function Track() {
       <SyncBanner snap={snapshot} rows={view.total} onRetry={() => void refresh('retry')} />
       {empty ? (
         <View style={s.center}>
-          {syncing ? <ActivityIndicator /> : null}
-          <Text style={{ color: t.sub, marginTop: 12, textAlign: 'center', paddingHorizontal: 24 }}>
-            {syncing ? 'Loading your transactions…' : 'Nothing to show yet. Pull down to sync.'}
-          </Text>
+          {syncing ? <ActivityIndicator color={t.accent} /> : null}
+          <Text style={[s.muted, { textAlign: 'center', paddingHorizontal: 24 }]}>{syncing ? 'Loading your transactions…' : 'Nothing to show yet. Pull down to sync.'}</Text>
         </View>
       ) : view.searching && view.matching === 0 ? (
         <View style={s.center}>
-          <Text style={{ color: t.sub }}>No transactions match “{query.trim()}”.</Text>
+          <Text style={s.muted}>No transactions match “{query.trim()}”.</Text>
         </View>
       ) : (
         <FlatList
@@ -97,14 +101,14 @@ export default function Track() {
           keyExtractor={(i) => i.key}
           renderItem={renderItem}
           getItemLayout={getItemLayout}
-          stickyHeaderIndices={undefined}
-          initialNumToRender={14}
+          initialNumToRender={12}
           maxToRenderPerBatch={12}
           windowSize={9}
           removeClippedSubviews
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          refreshControl={<RefreshControl refreshing={syncing} onRefresh={() => void refresh('pull to refresh')} />}
+          ListFooterComponent={<View style={{ height: 24 }} />}
+          refreshControl={<RefreshControl refreshing={syncing} onRefresh={() => void refresh('pull to refresh')} colors={[t.accent]} />}
         />
       )}
     </View>
@@ -112,7 +116,18 @@ export default function Track() {
 }
 
 const s = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  searchWrap: { paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
-  search: { height: 40, borderRadius: 10, paddingHorizontal: 12, fontSize: 15 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: t.bg },
+  muted: { color: t.sub, fontSize: 13, fontFamily: font.regular },
+  searchWrap: { paddingHorizontal: SIDE, paddingTop: 4 },
+  search: {
+    height: 46,
+    borderRadius: 23,
+    paddingHorizontal: 18,
+    fontSize: 14,
+    fontFamily: font.regular,
+    color: t.text,
+    backgroundColor: t.card,
+    borderWidth: 1,
+    borderColor: t.line,
+  },
 });
