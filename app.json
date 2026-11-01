@@ -36,6 +36,16 @@
       "expo-font"
     ],
     "scheme": "track",
-    "extra": {}
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "273c345e-0d18-4b24-b608-feb224891f0c"
+      }
+    },
+    "owner": "prabor_kar"
   }
 }
